@@ -1,6 +1,6 @@
 using System;
 
-namespace App
+namespace App.DataAccess.Models
 {
     public class Customer
     {

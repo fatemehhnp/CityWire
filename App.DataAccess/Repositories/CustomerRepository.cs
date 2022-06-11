@@ -1,4 +1,5 @@
-﻿using System;
+﻿using App.DataAccess.Models;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -6,9 +7,9 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 
-namespace App
+namespace App.DataAccess.Repositories
 {
-    public static class CustomerDataAccess
+    public static class CustomerRepository
     {
         public static void AddCustomer(Customer customer)
         {
