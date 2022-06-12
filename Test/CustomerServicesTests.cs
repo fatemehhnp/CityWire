@@ -17,12 +17,15 @@ namespace Test
     {
         private  Mock<ICompanyRepository> _mockCompanyRepository;
         private Mock<ICustomerCreditService> _mockCustomerCreditService;
+        private Mock<IWrapper> _mockWrapper;
         private CustomerService _sut;
         [SetUp]
         public void SetUp()
-        {;
+        {
             _mockCompanyRepository = new Mock<ICompanyRepository>();
-            _sut = new CustomerService(_mockCompanyRepository.Object,_mockCustomerCreditService.Object);
+            _mockCustomerCreditService = new Mock<ICustomerCreditService>();
+            _mockWrapper = new Mock<IWrapper>();
+            _sut = new CustomerService(_mockCompanyRepository.Object,_mockCustomerCreditService.Object,_mockWrapper.Object);
         }
         [Test]
         public void AddCustomer_WithGoldCompanyClassification_SetsCreditLimitToFalse()
@@ -37,7 +40,9 @@ namespace Test
             };
             var company = new Company { Id = 2, Name = "", Classification = Classification.Gold };
             _mockCompanyRepository.Setup(x => x.GetById(It.IsAny<int>())).Returns(company);
+            _mockWrapper.Setup(x => x.AddCustomer(It.IsAny<Customer>()));
             var result = _sut.AddCustomer(customerRequest);
+            Assert.IsFalse(result.HasCreditLimit);
         }
     }
 }

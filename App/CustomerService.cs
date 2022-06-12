@@ -12,28 +12,27 @@ namespace App
     {
         private readonly ICustomerCreditService _customerCreditService;
         private readonly ICompanyRepository _companyRepository;
+        private readonly IWrapper _wrapper;
         public CustomerService(ICompanyRepository companyRepository,
-            ICustomerCreditService customerCreditService)
+            ICustomerCreditService customerCreditService
+            ,IWrapper wrapper)
         {
             _companyRepository = companyRepository;
             _customerCreditService=customerCreditService;
+            _wrapper = wrapper;
         }
-        public bool AddCustomer(CustomerRequest customerRequest)
+        public Customer AddCustomer(CustomerRequest customerRequest)
         {
             if (string.IsNullOrWhiteSpace(customerRequest.FirstName) || string.IsNullOrWhiteSpace(customerRequest.LastName))
             { 
-                return false;
+                return null;
             }
 
-            var now = DateTime.Today;
-            var dateOfBirth = customerRequest.DateOfBirth;
-            int age = now.Year - dateOfBirth.Year;
-            //if (now.Month < dateOfBirth.Month || (now.Month == dateOfBirth.Month && now.Day < dateOfBirth.Day)) age--;
-            if (dateOfBirth.Date > now.AddYears(-age)) age--;
+            var age = GetAge(customerRequest.DateOfBirth);
 
             if (age < 21)
             {
-                return false;
+                return null;
             }
             var company = _companyRepository.GetById(customerRequest.companyId);
             var customer = new Customer
@@ -58,11 +57,18 @@ namespace App
                     customer.CreditLimit= creditLimit * 2;
                 }
                 customer.CreditLimit = creditLimit;
-                if (customer.CreditLimit < 500) return false;
+                if (customer.CreditLimit < 500) return null;
             }
-            CustomerRepository.AddCustomer(customer);
+            _wrapper.AddCustomer(customer);
 
-            return true;
+            return customer;
+        }
+        private int GetAge(DateTime dateOfBirth)
+        {
+            var now = DateTime.Today;
+            int age = now.Year - dateOfBirth.Year;
+            if (now.Month < dateOfBirth.Month || (now.Month == dateOfBirth.Month && now.Day < dateOfBirth.Day)) age--;
+            return age;
         }
     }
 }
