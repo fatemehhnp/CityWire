@@ -27,10 +27,11 @@ namespace App
             { 
                 return null;
             }
-
-            var age = GetAge(customerRequest.DateOfBirth);
-
-            if (age < 21)
+            if (!customerRequest.EmailAddress.Contains("@") && !customerRequest.EmailAddress.Contains("."))
+            {
+                return null;
+            }
+            if (GetAge(customerRequest.DateOfBirth) < Constants.AgeLimite)
             {
                 return null;
             }
@@ -40,7 +41,8 @@ namespace App
                 Company = company,
                 Firstname = customerRequest.FirstName,
                 Surname = customerRequest.LastName,
-                DateOfBirth = customerRequest.DateOfBirth
+                DateOfBirth = customerRequest.DateOfBirth,
+                EmailAddress=customerRequest.EmailAddress
             };
 
             if (company.Classification ==Classification.Gold)
@@ -52,13 +54,16 @@ namespace App
             {
                 customer.HasCreditLimit = true;
                 var creditLimit = _customerCreditService.GetCreditLimit(customer.Firstname, customer.Surname, customer.DateOfBirth);
-                if (company.Classification == Classification.Bronze)
+                if (company.Classification == Classification.Silver)
                 {
-                    customer.CreditLimit= creditLimit * 2;
+                    customer.CreditLimit = creditLimit * Constants.CreditMultiplyNumber;
                 }
-                customer.CreditLimit = creditLimit;
-                if (customer.CreditLimit < 500) return null;
+                else
+                {
+                    customer.CreditLimit = creditLimit;
+                }
             }
+            if (customer.HasCreditLimit && customer.CreditLimit < Constants.CreditLimite) return null;
             _wrapper.AddCustomer(customer);
 
             return customer;
